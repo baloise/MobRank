@@ -1,5 +1,6 @@
-function youandi() {
-	
+function YouAndI(prefix) {
+
+	this.prefix = prefix;
 	this.socket = null;
 	this.uuid = function () {
 	  function s4() {
@@ -10,11 +11,11 @@ function youandi() {
 	  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
 	    s4() + '-' + s4() + s4() + s4();
 	};
-	
+
 	this.getSessionId = function () {
 	    return (document.URL.split('#').length > 1) ? document.URL.split('#')[1] : null;
-	};	
-	
+	};
+
 	this.hasSession = function () {
 	    return this.getSessionId() != null;
 	};
@@ -27,16 +28,16 @@ function youandi() {
 	this.newSession = function () {
 		return this.setSessionId(this.uuid());
 	};
-	
+
 	this.disconnect = function () {
 		if(this.socket != null) {
 			socket.close();
 		}
 		this.socket = null;
 	}
-	
+
 	this.connect = function () {
-		this.socket = new WebSocket('ws://hub.togetherjs.com/hub/youandi_'+this.getSessionId());
+		this.socket = new WebSocket('ws://hub.togetherjs.com/hub/youandi'+prefix+'_'+this.getSessionId());
 
 		this.socket.addEventListener('open', function (event) {
 	       console.log(event);
@@ -46,6 +47,6 @@ function youandi() {
 	       console.log('Message from server ', JSON.parse(event.data));
 	   });
 	};
-	
-   
+
+
 }

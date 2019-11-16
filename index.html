@@ -17,7 +17,7 @@
         dark
       >
 
-        <v-toolbar-title>MobRank</v-toolbar-title>
+        <v-toolbar-title>MobRank #{{sessionId}}</v-toolbar-title>
 
         <v-spacer></v-spacer>
 
@@ -33,21 +33,21 @@
                             <v-dialog v-model="dialog" persistent max-width="600px">
                               <v-card>
                                 <v-card-title>
-                                  <span class="headline">User Profile</span>
+                                  <span class="headline">Join or create session</span>
                                 </v-card-title>
                                 <v-card-text>
                                   <v-container>
                                     <v-row>
                                       <v-col cols="12">
-                                        <v-text-field label="Session ID" required></v-text-field>
+                                        <v-text-field v-model="sessionIdInput" label="Session ID" required></v-text-field>
                                       </v-col>
                                     </v-row>
                                   </v-container>
                                 </v-card-text>
                                 <v-card-actions>
                                   <v-spacer></v-spacer>
-                                  <v-btn color="blue darken-1" text @click="dialog = false">Close</v-btn>
-                                  <v-btn color="blue darken-1" text @click="dialog = false">Save</v-btn>
+                                  <v-btn color="blue darken-1" text @click="dialog = false;join(false)" :disabled="sessionIdInput == ''">Join</v-btn>
+                                  <v-btn color="blue darken-1" text @click="dialog = false;join(true)">Create</v-btn>
                                 </v-card-actions>
                               </v-card>
                             </v-dialog>
@@ -61,22 +61,21 @@
               <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
               <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
               <script>
-                var yai = new youandi();
+                var yai = new YouAndI('MobRank');
                 var app = new Vue({
                   el: '#app',
                   vuetify: new Vuetify(),
                   data : {
+                    sessionIdInput : '',
                     dialog : !yai.hasSession(),
+                    sessionId : yai.getSessionId(),
                   },
+                  methods: {
+                    join: function (create) {
+                      this.sessionId = yai.setSessionId(create ? yai.uuid() : this.sessionIdInput);
+                    }
+                  }
                 })
-              </script>
-
-<script type="text/javascript">
-
-
-
-
 </script>
-
 </body>
 </html>
