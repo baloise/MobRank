@@ -20,7 +20,7 @@
         <v-toolbar-title>MobRank #{{sessionId}}</v-toolbar-title>
 
         <v-spacer></v-spacer>
-
+        <v-chip :color="connected ? 'green' : 'grey'">Connected</v-chip>
 
 
       </v-app-bar>
@@ -61,7 +61,19 @@
               <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
               <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
               <script>
-                var yai = new YouAndI('MobRank');
+                var yai = new YouAndI(
+                  'MobRank',
+                  function(event) {
+                    console.log('got connected')
+                    app.connected = true;
+                  },
+                  function(data) {
+                    app.lastMessage = data;
+                  },
+                  function() {
+                      app.connected = false;
+                  },
+                );
                 var app = new Vue({
                   el: '#app',
                   vuetify: new Vuetify(),
@@ -69,6 +81,8 @@
                     sessionIdInput : '',
                     dialog : !yai.hasSession(),
                     sessionId : yai.getSessionId(),
+                    connected : false,
+                    lastMessage : '',
                   },
                   methods: {
                     join: function (create) {

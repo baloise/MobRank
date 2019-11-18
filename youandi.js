@@ -1,7 +1,11 @@
-function YouAndI(prefix) {
+function YouAndI(prefix, onConnect, onMessage, onDisconnect) {
 
 	this.prefix = prefix;
 	this.socket = null;
+	this.onConnect = onConnect;
+	this.onMessage = onMessage;
+	this.onDisconnect = onDisconnect;
+
 	this.uuid = function () {
 	  function s4() {
 	    return Math.floor((1 + Math.random()) * 0x10000)
@@ -31,20 +35,24 @@ function YouAndI(prefix) {
 
 	this.disconnect = function () {
 		if(this.socket != null) {
-			socket.close();
+			this.socket.close();
 		}
 		this.socket = null;
+		if(this.onDisconnect) this.onDisconnect();
 	}
 
 	this.connect = function () {
 		this.socket = new WebSocket('ws://hub.togetherjs.com/hub/youandi'+prefix+'_'+this.getSessionId());
 
 		this.socket.addEventListener('open', function (event) {
-	       console.log(event);
+				 console.log(event);
+				 if(this.onConnect) this.onConnect(event);
 	   });
 
 		this.socket.addEventListener('message', function (event) {
-	       console.log('Message from server ', JSON.parse(event.data));
+				 var data = JSON.parse(event.data);
+				 console.log('Message from server ', data);
+				 if(this.onMesssage) this.onMesssage(data);
 	   });
 	};
 
