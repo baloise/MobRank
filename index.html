@@ -54,6 +54,13 @@
                           </v-row>
 
 
+                <v-text-field v-model="messageInput" label="Message"></v-text-field>
+                <v-btn color="blue darken-1" text @click="send()">send</v-btn>
+                <pre>{{lastMessage}}</pre>
+                <br/>
+                <pre>{{clusterState}}</pre>
+                  <pre>{{isLeader}}</pre>
+                <v-btn color="blue darken-1" text @click="syncState()">state</v-btn>
                 </v-content>
 </v-app>
 </div>
@@ -63,6 +70,9 @@
               <script>
                 var yai = new YouAndI(
                   'MobRank',
+                  function(yai) {
+                    yai.send(app.lastMessage);
+                  },
                   function(event) {
                     console.log('got connected')
                     app.connected = true;
@@ -83,13 +93,26 @@
                     sessionId : yai.getSessionId(),
                     connected : false,
                     lastMessage : '',
+                    clusterState : null,
+                    isLeader : false,
+                    messageInput : '',
                   },
                   methods: {
                     join: function (create) {
                       this.sessionId = yai.setSessionId(create ? yai.uuid() : this.sessionIdInput);
-                    }
+                      yai.connect();
+                    },
+                    syncState: function (create) {
+                      this.clusterState = yai.clusterState;
+                      this.isLeader = yai.isLeader;
+                    },
+                    send: function () {
+                      yai.send(this.messageInput);
+                    },
                   }
-                })
+                });
+                yai.connect();
+
 </script>
 </body>
 </html>
