@@ -76,10 +76,11 @@
                 <div v-if="page =='Home'">
                   <v-text-field v-model="messageInput" label="Message"></v-text-field>
                   <v-btn color="blue darken-1" text @click="send()">send</v-btn>
+                  <br/>
+                  <pre>{{lastMessage}}</pre>
+
                 </div>
                 <div v-if="page =='Cluster'">
-                  <pre>{{lastMessage}}</pre>
-                  <br/>
                   <pre>{{yaiID}} : {{isLeader}}</pre>
                   <pre>{{clusterState}}</pre>
                 </div>
@@ -128,10 +129,10 @@
                     .addListener("onboard" , function(yai) {
                       yai.send(app.lastMessage);
                     })
-                    .addListener("connect" , function(yai) {
+                    .addListener("connect" , function() {
                       app.connected = true;
                     })
-                    .addListener("message" , function(yai) {
+                    .addListener("message" , function(data) {
                       app.lastMessage = data;
                     })
                     .addListener("disconnect" , function(yai) {
