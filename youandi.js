@@ -1,15 +1,28 @@
-function YouAndI(prefix, onBoard, onConnect, onMessage, onDisconnect) {
+function YouAndI(prefix) {
 
 	this.prefix = prefix;
 	this.socket = null;
-	this.onConnect = onConnect;
-	this.onBoard = onBoard;
-	this.onMessage = onMessage;
-	this.onDisconnect = onDisconnect;
 	this.yai = this;
 	this.isLeader = false;
 	this.createdAt = new Date().getTime();
 	this.clusterState = {};
+	this.listeners = {
+		clusterChange : [],
+	  connect : [],
+		onboard : [],
+		message : [],
+	  disconnect : [],
+	}
+
+	this.addListener = function (event, listener) {
+		  this.listeners[event].push(listener);
+			return this;
+	};
+
+	this.fireEvent = function (eventType, event) {
+		  this.listeners[eventType].forEach(listener => listener(event));
+	};
+
 	window.addEventListener('beforeunload', function (event) {
  		yai.disconnect();
 	});
@@ -51,9 +64,7 @@ function YouAndI(prefix, onBoard, onConnect, onMessage, onDisconnect) {
 		if(this.socket != null) {
 			if(!message.type || !message.type.startsWith("yai_")) {
 					if(this.isLeader) {
-						if(this.onMessage){
-	 					  this.onMessage(message);
-	 				  }
+						yai.fireEvent("message" , message);
 						message = {"type" : "yai_message", "data" : message};
 					} else {
 						message = {"type" : "yai_cast", "data" : message};
@@ -71,7 +82,7 @@ function YouAndI(prefix, onBoard, onConnect, onMessage, onDisconnect) {
 			this.socket.close();
 		}
 		this.socket = null;
-		if(this.onDisconnect) this.onDisconnect();
+		yai.fireEvent("disconnect" , yai);
 	};
 
 	this.connect = function () {
@@ -80,7 +91,7 @@ function YouAndI(prefix, onBoard, onConnect, onMessage, onDisconnect) {
 		this.socket = new WebSocket('ws://hub.togetherjs.com/hub/youandi'+prefix+'_'+sessionId);
 
 		this.socket.addEventListener('open', function (event) {
-				 if(yai.onConnect) yai.onConnect(event);
+				 yai.fireEvent("connect" , event);
 				 yai.send({"type" : "yai_hello" ,"createdAt" : yai.createdAt});
 	   });
 
@@ -90,13 +101,15 @@ function YouAndI(prefix, onBoard, onConnect, onMessage, onDisconnect) {
 					  yai.isLeader = data.peerCount == 0;
 						yai.clusterState.leader =  yai.createdAt;
 						yai.clusterState.nodes = [yai.createdAt];
+						yai.fireEvent("clusterChange" , yai.clusterState);
 				 } else if(data.type && data.type.startsWith("yai_")){
 					 if(data.type == "yai_hello") {
 						 yai.clusterState.nodes.push(data.createdAt);
 						 if(yai.isLeader) {
 						 		yai.send({"type" : "yai_clusterState" ,"state" : yai.clusterState});
-								if(yai.onBoard) yai.onBoard(yai);
+								yai.fireEvent("onboard" , yai);
 					   }
+						 yai.fireEvent("clusterChange" , yai.clusterState);
 					 } else if(data.type == "yai_bye") {
 						 yai.clusterState.nodes = yai.arrayRemove(yai.clusterState.nodes, data.createdAt);
 						 if(yai.clusterState.leader == data.createdAt){
@@ -106,21 +119,19 @@ function YouAndI(prefix, onBoard, onConnect, onMessage, onDisconnect) {
 						 if(yai.isLeader) {
 						 		yai.send({"type" : "yai_clusterState" ,"state" : yai.clusterState});
 						 }
+						 yai.fireEvent("clusterChange" , yai.clusterState);
 					 } else if(data.type == "yai_clusterState") {
 						 yai.clusterState.leader =  data.state.leader;
 						 yai.clusterState.nodes =  data.state.nodes;
+						 yai.fireEvent("clusterChange" , yai.clusterState);
 					 }  else if(data.type == "yai_cast") {
 						 if(yai.isLeader){
 							 data.type = "yai_message";
 							 yai.send(data);
-							 if(yai.onMessage){
-	 	 					   yai.onMessage(data.data);
-	 	 				   }
+							 yai.fireEvent("message" , data.data);
 						 }
 					 } else if(data.type == "yai_message") {
-						 if(yai.onMessage){
- 	 					  	yai.onMessage(data.data);
- 	 				 	 }
+						  yai.fireEvent("message" , data.data);
 					 }
 				 }
 	   });

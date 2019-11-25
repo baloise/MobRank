@@ -22,6 +22,26 @@
         <v-spacer></v-spacer>
         <v-chip :color="connected ? 'green' : 'grey'">Connected</v-chip>
 
+        <v-menu
+        left
+        bottom
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item
+            v-for="n in pages"
+            :key="n"
+            @click="(e) => {navigate(e);}"
+          >
+            <v-list-item-title>{{ n }}</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
 
       </v-app-bar>
     </div>
@@ -53,14 +73,16 @@
                             </v-dialog>
                           </v-row>
 
-
-                <v-text-field v-model="messageInput" label="Message"></v-text-field>
-                <v-btn color="blue darken-1" text @click="send()">send</v-btn>
-                <pre>{{lastMessage}}</pre>
-                <br/>
-                <pre>{{clusterState}}</pre>
-                  <pre>{{isLeader}}</pre>
-                <v-btn color="blue darken-1" text @click="syncState()">state</v-btn>
+                <div v-if="page =='Home'">
+                  <v-text-field v-model="messageInput" label="Message"></v-text-field>
+                  <v-btn color="blue darken-1" text @click="send()">send</v-btn>
+                </div>
+                <div v-if="page =='Cluster'">
+                  <pre>{{lastMessage}}</pre>
+                  <br/>
+                  <pre>{{yaiID}} : {{isLeader}}</pre>
+                  <pre>{{clusterState}}</pre>
+                </div>
                 </v-content>
 </v-app>
 </div>
@@ -68,22 +90,7 @@
               <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
               <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
               <script>
-                var yai = new YouAndI(
-                  'MobRank',
-                  function(yai) {
-                    yai.send(app.lastMessage);
-                  },
-                  function(event) {
-                    console.log('got connected')
-                    app.connected = true;
-                  },
-                  function(data) {
-                    app.lastMessage = data;
-                  },
-                  function() {
-                      app.connected = false;
-                  },
-                );
+                var yai = new YouAndI('MobRank');
                 var app = new Vue({
                   el: '#app',
                   vuetify: new Vuetify(),
@@ -96,11 +103,17 @@
                     clusterState : null,
                     isLeader : false,
                     messageInput : '',
+                    yaiID : yai.createdAt,
+                    pages : ['Home' , 'Cluster'],
+                    page : 'Home' ,
                   },
                   methods: {
                     join: function (create) {
                       this.sessionId = yai.setSessionId(create ? yai.uuid() : this.sessionIdInput);
                       yai.connect();
+                    },
+                    navigate: function (e) {
+                      this.page = e.target.innerText;
                     },
                     syncState: function (create) {
                       this.clusterState = yai.clusterState;
@@ -111,7 +124,20 @@
                     },
                   }
                 });
-                yai.connect();
+                yai .addListener("clusterChange" , app.syncState)
+                    .addListener("onboard" , function(yai) {
+                      yai.send(app.lastMessage);
+                    })
+                    .addListener("connect" , function(yai) {
+                      app.connected = true;
+                    })
+                    .addListener("message" , function(yai) {
+                      app.lastMessage = data;
+                    })
+                    .addListener("disconnect" , function(yai) {
+                      app.connected = false;
+                    })
+                    .connect();
 
 </script>
 </body>
