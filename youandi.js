@@ -88,7 +88,7 @@ function YouAndI(prefix) {
 	this.connect = function () {
     var sessionId = this.getSessionId();
 		if(!sessionId) return false;
-		this.socket = new WebSocket('ws://hub.togetherjs.com/hub/youandi'+prefix+'_'+sessionId);
+		this.socket = new WebSocket('wss://hub.togetherjs.com/hub/youandi'+prefix+'_'+sessionId);
 
 		this.socket.addEventListener('open', function (event) {
 				 yai.fireEvent("connect" , event);
