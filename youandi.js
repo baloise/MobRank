@@ -15,8 +15,9 @@ function YouAndI(prefix) {
 	}
 
 	this.addListener = function (event, listener) {
+		  listener.bind(this.yai)
 		  this.listeners[event].push(listener);
-			return this;
+		  return this;
 	};
 
 	this.fireEvent = function (eventType, event) {
@@ -82,7 +83,7 @@ function YouAndI(prefix) {
 			this.socket.close();
 		}
 		this.socket = null;
-		yai.fireEvent("disconnect" , yai);
+		yai.fireEvent("disconnect");
 	};
 
 	this.connect = function () {
@@ -107,7 +108,7 @@ function YouAndI(prefix) {
 						 yai.clusterState.nodes.push(data.createdAt);
 						 if(yai.isLeader) {
 						 		yai.send({"type" : "yai_clusterState" ,"state" : yai.clusterState});
-								yai.fireEvent("onboard" , yai);
+								yai.fireEvent("onboard");
 					   }
 						 yai.fireEvent("clusterChange" , yai.clusterState);
 					 } else if(data.type == "yai_bye") {

@@ -126,8 +126,8 @@
                   }
                 });
                 yai .addListener("clusterChange" , app.syncState)
-                    .addListener("onboard" , function(yai) {
-                      yai.send(app.lastMessage);
+                    .addListener("onboard" , function() {
+                      this.send(app.lastMessage);
                     })
                     .addListener("connect" , function() {
                       app.connected = true;
@@ -135,7 +135,7 @@
                     .addListener("message" , function(data) {
                       app.lastMessage = data;
                     })
-                    .addListener("disconnect" , function(yai) {
+                    .addListener("disconnect" , function() {
                       app.connected = false;
                     })
                     .connect();
