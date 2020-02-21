@@ -8,15 +8,14 @@ function YouAndI(prefix) {
 	this.clusterState = {};
 	this.listeners = {
 		clusterChange : [],
-	  connect : [],
+	    connect : [],
 		onboard : [],
 		message : [],
-	  disconnect : [],
+	   disconnect : [],
 	}
 
 	this.addListener = function (event, listener) {
-		  listener.bind(this.yai)
-		  this.listeners[event].push(listener);
+		  this.listeners[event].push(listener.bind(this));
 		  return this;
 	};
 
@@ -34,14 +33,14 @@ function YouAndI(prefix) {
 		});
 	};
 
-	this.uuid = function () {
+	this.uuid = function (sep) {
 	  function s4() {
 	    return Math.floor((1 + Math.random()) * 0x10000)
 	      .toString(16)
 	      .substring(1);
 	  }
-	  return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-	    s4() + '-' + s4() + s4() + s4();
+	  if(sep == null) sep = '-';
+	  return s4() + s4() + sep + s4() + sep + s4() + sep + s4() + sep + s4() + s4() + s4();
 	};
 
 	this.getSessionId = function () {
@@ -62,10 +61,10 @@ function YouAndI(prefix) {
 	};
 
 	this.send = function (message) {
-		if(this.socket != null) {
+		if(this.socket != null && this.socket.readyState == 1) {
 			if(!message.type || !message.type.startsWith("yai_")) {
 					if(this.isLeader) {
-						yai.fireEvent("message" , message);
+						this.fireEvent("message" , message);
 						message = {"type" : "yai_message", "data" : message};
 					} else {
 						message = {"type" : "yai_cast", "data" : message};
@@ -73,21 +72,22 @@ function YouAndI(prefix) {
 			}
 			this.socket.send(JSON.stringify(message))
 		} else {
+			console.warn("message not send", message);
 			return false;
 		}
 	};
 
 	this.disconnect = function () {
 		if(this.socket != null) {
-			this.send({"type" : "yai_bye" ,"createdAt" : yai.createdAt});
+			this.send({"type" : "yai_bye" ,"createdAt" : this.createdAt});
 			this.socket.close();
 		}
 		this.socket = null;
-		yai.fireEvent("disconnect");
+		this.fireEvent("disconnect");
 	};
 
 	this.connect = function () {
-    var sessionId = this.getSessionId();
+		var sessionId = this.getSessionId();
 		if(!sessionId) return false;
 		this.socket = new WebSocket('wss://hub.togetherjs.com/hub/youandi'+prefix+'_'+sessionId);
 
