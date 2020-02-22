@@ -8,10 +8,12 @@ function YouAndI(prefix) {
 	this.clusterState = {};
 	this.listeners = {
 		clusterChange : [],
-	  connect : [],
 		onboard : [],
+		bye : [],
+		hello : [],
+		connect : [],
+		disconnect : [],
 		message : [],
-	  disconnect : [],
 	}
 
 	this.addListener = function (event, listener) {
@@ -111,6 +113,7 @@ function YouAndI(prefix) {
 								yai.fireEvent("onboard");
 					   }
 						 yai.fireEvent("clusterChange" , yai.clusterState);
+						 yai.fireEvent("hello" , data.createdAt);
 					 } else if(data.type == "yai_bye") {
 						 yai.clusterState.nodes = yai.arrayRemove(yai.clusterState.nodes, data.createdAt);
 						 if(yai.clusterState.leader == data.createdAt){
@@ -121,6 +124,7 @@ function YouAndI(prefix) {
 						 		yai.send({"type" : "yai_clusterState" ,"state" : yai.clusterState});
 						 }
 						 yai.fireEvent("clusterChange" , yai.clusterState);
+						 yai.fireEvent("bye" , data.createdAt);
 					 } else if(data.type == "yai_clusterState") {
 						 yai.clusterState.leader =  data.state.leader;
 						 yai.clusterState.nodes =  data.state.nodes;
