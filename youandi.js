@@ -8,10 +8,10 @@ function YouAndI(prefix) {
 	this.clusterState = {};
 	this.listeners = {
 		clusterChange : [],
-	    connect : [],
+	  connect : [],
 		onboard : [],
 		message : [],
-	   disconnect : [],
+	  disconnect : [],
 	}
 
 	this.addListener = function (event, listener) {
