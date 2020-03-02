@@ -1,6 +1,7 @@
 function YouAndI(prefix) {
 
 	this.prefix = prefix;
+	this.hubUrl = 'wss://hub.togetherjs.com/hub/youandi';
 	this.socket = null;
 	this.yai = this;
 	this.isLeader = false;
@@ -18,6 +19,11 @@ function YouAndI(prefix) {
 
 	this.addListener = function (event, listener) {
 		  this.listeners[event].push(listener.bind(this));
+		  return this;
+	};
+	
+	this.withHubUrl = function (hubUrl) {
+		  this.hubUrl = hubUrl;
 		  return this;
 	};
 
@@ -91,7 +97,7 @@ function YouAndI(prefix) {
 	this.connect = function () {
 		var sessionId = this.getSessionId();
 		if(!sessionId) return false;
-		this.socket = new WebSocket('wss://hub.togetherjs.com/hub/youandi'+prefix+'_'+sessionId);
+		this.socket = new WebSocket(this.hubUrl+prefix+'_'+sessionId);
 
 		this.socket.addEventListener('open', function (event) {
 				 yai.fireEvent("connect" , event);
