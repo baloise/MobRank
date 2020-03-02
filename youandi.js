@@ -107,17 +107,19 @@ function YouAndI(prefix) {
 		this.socket.addEventListener('message', function (event) {
 				 var data = JSON.parse(event.data);
 				 if(data.type == "init-connection") {
-					  yai.isLeader = data.peerCount == 0;
+					    yai.isLeader = data.peerCount == 0;
 						yai.clusterState.leader =  yai.createdAt;
 						yai.clusterState.nodes = [yai.createdAt];
 						yai.fireEvent("clusterChange" , yai.clusterState);
 				 } else if(data.type && data.type.startsWith("yai_")){
 					 if(data.type == "yai_hello") {
-						 yai.clusterState.nodes.push(data.createdAt);
+						 if(yai.createdAt != data.createdAt){							 
+							 yai.clusterState.nodes.push(data.createdAt);
+						 }
 						 if(yai.isLeader) {
-						 		yai.send({"type" : "yai_clusterState" ,"state" : yai.clusterState});
-								yai.fireEvent("onboard");
-					   }
+						 	yai.send({"type" : "yai_clusterState" ,"state" : yai.clusterState});
+							yai.fireEvent("onboard");
+					     }
 						 yai.fireEvent("clusterChange" , yai.clusterState);
 						 yai.fireEvent("hello" , data.createdAt);
 					 } else if(data.type == "yai_bye") {
