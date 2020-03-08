@@ -81,7 +81,6 @@ function YouAndI(prefix) {
 	};
 	
 	this.addNode = function (createdAt) {
-		if(createdAt == this.createdAt) return;
 		if(this.clusterState.nodes.indexOf(createdAt) < 0){							 
 			 this.clusterState.nodes.push(createdAt);
 		}
