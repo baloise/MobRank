@@ -1,7 +1,7 @@
 function YouAndI(prefix) {
 
 	this.prefix = prefix;
-	this.hubUrl = 'wss://it-is-free.appspot.com/hub/youandi';
+	this.hubUrl = 'wss://togetherjs-hub.glitch.me/youandi';
 	this.socket = null;
 	this.yai = this;
 	this.isLeader = false;
