@@ -97,6 +97,10 @@ function YouAndI(prefix) {
 	this.connect = function () {
 		var sessionId = this.getSessionId();
 		if(!sessionId) return false;
+		if(this.socket &&  this.socket.readyState <  WebSocket.CLOSING) {
+			console.debug("yai already connected");
+			return;
+		}
 		this.socket = new WebSocket(this.hubUrl+prefix+'_'+sessionId);
 
 		this.socket.addEventListener('open', function (event) {
